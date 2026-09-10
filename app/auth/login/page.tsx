@@ -3,41 +3,29 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { createClient } from "@/lib/supabase/client";
+import { loginUser } from "./actions";
 
 export default function LoginPage() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
-  async function handleLogin(e: React.FormEvent) {
+  async function handleLogin(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setLoading(true);
     setError(null);
 
-    const supabase = createClient();
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
+    const formData = new FormData(e.currentTarget);
+    const result = await loginUser(formData);
 
-    if (error) {
-      setError(error.message);
+    if ("error" in result) {
+      setError(result.error);
       setLoading(false);
       return;
     }
 
-    // Récupère le rôle depuis la table profiles
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("role")
-      .eq("id", data.user.id)
-      .single();
-
-    if (profile?.role === "admin") router.push("/admin/dashboard");
-    else if (profile?.role === "livreur") router.push("/livreur/dashboard");
+    if (result.role === "admin") router.push("/admin/dashboard");
+    else if (result.role === "livreur") router.push("/livreur/dashboard");
     else router.push("/client");
 
     router.refresh();
@@ -48,18 +36,19 @@ export default function LoginPage() {
       <form onSubmit={handleLogin} className="w-full max-w-sm space-y-4">
         <h1 className="text-2xl font-bold">Connexion</h1>
         <input
-          type="email"
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
+          name="telephone"
+          type="tel"
+          placeholder="Numéro de téléphone"
           className="w-full rounded border px-3 py-2"
           required
         />
         <input
+          name="pin"
           type="password"
-          placeholder="Mot de passe"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
+          inputMode="numeric"
+          maxLength={6}
+          pattern="\d{6}"
+          placeholder="Code PIN (6 chiffres)"
           className="w-full rounded border px-3 py-2"
           required
         />
