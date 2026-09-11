@@ -59,7 +59,7 @@ export default async function AdminDashboard() {
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-gray-900">Vue d'ensemble</h1>
         <p className="text-sm text-gray-500 mt-1">
-          Aperçu global de l'activité de la plateforme.
+          Aperçu global de l&apos;activité de la plateforme.
         </p>
       </div>
 
