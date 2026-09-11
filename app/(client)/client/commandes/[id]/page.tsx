@@ -51,7 +51,7 @@ export default async function CommandeDetailPage({
   }
 
   return (
-    <div className="p-6 sm:p-8 max-w-3xl">
+    <div className="p-4 sm:p-6 lg:p-8 max-w-3xl">
       <Link
         href="/client/commandes"
         className="text-sm text-gray-500 hover:text-gray-700"
@@ -59,7 +59,7 @@ export default async function CommandeDetailPage({
         ← Retour à mes commandes
       </Link>
 
-      <div className="mt-4 mb-6 flex items-start justify-between gap-4">
+      <div className="mt-4 mb-6 flex flex-wrap items-start justify-between gap-4">
         <div>
           <h1 className="text-xl font-bold text-gray-900">
             Commande du {formatDate(commande.created_at)}

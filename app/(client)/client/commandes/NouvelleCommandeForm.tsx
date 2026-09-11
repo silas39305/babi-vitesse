@@ -2,6 +2,7 @@
 
 import { useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { createCommande } from "./actions";
 import {
   COMMUNES_PAR_ZONE,
@@ -17,14 +18,22 @@ function formatFCFA(montant: number) {
   return `${montant.toLocaleString("fr-FR")} FCFA`;
 }
 
-export default function NouvelleCommandeForm() {
+export default function NouvelleCommandeForm({
+  defaultClientNumero = "",
+  defaultClientWhatsapp = "",
+}: {
+  defaultClientNumero?: string;
+  defaultClientWhatsapp?: string;
+}) {
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [commune, setCommune] = useState("");
   const [urgent, setUrgent] = useState(false);
-  const [memeNumero, setMemeNumero] = useState(false);
-  const [clientNumero, setClientNumero] = useState("");
-  const [clientWhatsapp, setClientWhatsapp] = useState("");
+  const [clientNumero, setClientNumero] = useState(defaultClientNumero);
+  const [clientWhatsapp, setClientWhatsapp] = useState(defaultClientWhatsapp);
+  const [memeNumero, setMemeNumero] = useState(
+    defaultClientNumero !== "" && defaultClientNumero === defaultClientWhatsapp
+  );
   const router = useRouter();
 
   const prixLivraison = useMemo(
@@ -181,6 +190,12 @@ export default function NouvelleCommandeForm() {
           </label>
         </div>
       </div>
+
+      <p className="text-xs text-gray-500 -mt-2">
+        <Link href="/client/profil" className="text-blue-600 hover:underline">
+          Modifier mes coordonnées par défaut
+        </Link>
+      </p>
 
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">

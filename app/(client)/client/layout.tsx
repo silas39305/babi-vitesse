@@ -11,5 +11,5 @@ export default async function ClientLayout({
   if (!session) redirect("/auth/login");
   if (session.role !== "client") redirect("/auth/login");
 
-  return <div className="min-h-screen">{children}</div>;
+  return <div className="min-h-screen overflow-x-hidden">{children}</div>;
 }

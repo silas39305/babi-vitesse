@@ -68,8 +68,8 @@ export default async function MesCommandesPage({
   );
 
   return (
-    <div className="p-6 sm:p-8">
-      <div className="mb-6 flex items-start justify-between gap-4">
+    <div className="p-4 sm:p-6 lg:p-8">
+      <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Mes commandes</h1>
           <p className="text-sm text-gray-500 mt-1">
@@ -124,71 +124,132 @@ export default async function MesCommandesPage({
             )}
           </div>
         ) : (
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-gray-200 text-left text-gray-500">
-                <th className="px-5 py-3 font-medium">Livraison</th>
-                <th className="px-5 py-3 font-medium">Destinataire</th>
-                <th className="px-5 py-3 font-medium">Livreur</th>
-                <th className="px-5 py-3 font-medium">Prix</th>
-                <th className="px-5 py-3 font-medium">Créée le</th>
-                <th className="px-5 py-3 font-medium">Statut</th>
-                <th className="px-5 py-3" />
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-100">
+          <>
+            {/* Vue carte : écrans étroits (mobile) */}
+            <ul className="sm:hidden divide-y divide-gray-100">
               {commandes.map((commande) => (
-                <tr key={commande.id} className="hover:bg-gray-50">
-                  <td className="px-5 py-3 text-gray-900 max-w-xs truncate">
-                    {commande.adresse_recuperation} →{" "}
-                    {commande.adresse_livraison}
-                    <span className="block text-xs text-gray-400">
-                      {commande.commune}
-                    </span>
-                  </td>
-                  <td className="px-5 py-3 text-gray-600">
-                    {commande.destinataire_nom}
-                  </td>
-                  <td className="px-5 py-3 text-gray-600">
-                    {commande.livreur_nom
-                      ? `${commande.livreur_prenom} ${commande.livreur_nom}`
-                      : "Non assigné"}
-                  </td>
-                  <td className="px-5 py-3 text-gray-600">
-                    {commande.prix_livraison !== null
-                      ? formatFCFA(commande.prix_livraison)
-                      : "—"}
-                    {commande.urgent && (
-                      <span className="ml-1.5 text-xs font-medium px-1.5 py-0.5 rounded-full bg-orange-100 text-orange-800">
-                        Urgent
+                <li key={commande.id}>
+                  <Link
+                    href={`/client/commandes/${commande.id}`}
+                    className="block px-4 py-3 hover:bg-gray-50 transition-colors"
+                  >
+                    <div className="flex items-start justify-between gap-3 mb-1">
+                      <p className="text-sm font-medium text-gray-900 min-w-0 truncate">
+                        {commande.adresse_recuperation} →{" "}
+                        {commande.adresse_livraison}
+                      </p>
+                      <span
+                        className={`shrink-0 text-xs font-medium px-2 py-1 rounded-full ${
+                          STATUS_STYLES[commande.statut] ??
+                          "bg-gray-100 text-gray-700"
+                        }`}
+                      >
+                        {STATUS_LABELS[commande.statut] ?? commande.statut}
                       </span>
-                    )}
-                  </td>
-                  <td className="px-5 py-3 text-gray-600">
-                    {formatDate(commande.created_at)}
-                  </td>
-                  <td className="px-5 py-3">
-                    <span
-                      className={`text-xs font-medium px-2 py-1 rounded-full ${
-                        STATUS_STYLES[commande.statut] ??
-                        "bg-gray-100 text-gray-700"
-                      }`}
-                    >
-                      {STATUS_LABELS[commande.statut] ?? commande.statut}
-                    </span>
-                  </td>
-                  <td className="px-5 py-3 text-right">
-                    <Link
-                      href={`/client/commandes/${commande.id}`}
-                      className="text-blue-600 hover:underline font-medium"
-                    >
-                      Voir →
-                    </Link>
-                  </td>
-                </tr>
+                    </div>
+                    <p className="text-xs text-gray-400 mb-2">
+                      {commande.commune}
+                    </p>
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-gray-600 min-w-0 truncate">
+                        {commande.destinataire_nom}
+                      </span>
+                      <span className="shrink-0 font-medium text-gray-900 ml-2">
+                        {commande.prix_livraison !== null
+                          ? formatFCFA(commande.prix_livraison)
+                          : "—"}
+                        {commande.urgent && (
+                          <span className="ml-1.5 text-xs font-medium px-1.5 py-0.5 rounded-full bg-orange-100 text-orange-800">
+                            Urgent
+                          </span>
+                        )}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between text-xs text-gray-400 mt-1">
+                      <span className="min-w-0 truncate">
+                        {commande.livreur_nom
+                          ? `${commande.livreur_prenom} ${commande.livreur_nom}`
+                          : "Non assigné"}
+                      </span>
+                      <span className="shrink-0 ml-2">
+                        {formatDate(commande.created_at)}
+                      </span>
+                    </div>
+                  </Link>
+                </li>
               ))}
-            </tbody>
-          </table>
+            </ul>
+
+            {/* Vue tableau : écrans larges, avec défilement horizontal
+                de secours si le tableau reste plus large que l'écran. */}
+            <div className="hidden sm:block overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-gray-200 text-left text-gray-500">
+                    <th className="px-5 py-3 font-medium">Livraison</th>
+                    <th className="px-5 py-3 font-medium">Destinataire</th>
+                    <th className="px-5 py-3 font-medium">Livreur</th>
+                    <th className="px-5 py-3 font-medium">Prix</th>
+                    <th className="px-5 py-3 font-medium">Créée le</th>
+                    <th className="px-5 py-3 font-medium">Statut</th>
+                    <th className="px-5 py-3" />
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100">
+                  {commandes.map((commande) => (
+                    <tr key={commande.id} className="hover:bg-gray-50">
+                      <td className="px-5 py-3 text-gray-900 max-w-xs truncate">
+                        {commande.adresse_recuperation} →{" "}
+                        {commande.adresse_livraison}
+                        <span className="block text-xs text-gray-400">
+                          {commande.commune}
+                        </span>
+                      </td>
+                      <td className="px-5 py-3 text-gray-600">
+                        {commande.destinataire_nom}
+                      </td>
+                      <td className="px-5 py-3 text-gray-600">
+                        {commande.livreur_nom
+                          ? `${commande.livreur_prenom} ${commande.livreur_nom}`
+                          : "Non assigné"}
+                      </td>
+                      <td className="px-5 py-3 text-gray-600 whitespace-nowrap">
+                        {commande.prix_livraison !== null
+                          ? formatFCFA(commande.prix_livraison)
+                          : "—"}
+                        {commande.urgent && (
+                          <span className="ml-1.5 text-xs font-medium px-1.5 py-0.5 rounded-full bg-orange-100 text-orange-800">
+                            Urgent
+                          </span>
+                        )}
+                      </td>
+                      <td className="px-5 py-3 text-gray-600 whitespace-nowrap">
+                        {formatDate(commande.created_at)}
+                      </td>
+                      <td className="px-5 py-3">
+                        <span
+                          className={`text-xs font-medium px-2 py-1 rounded-full ${
+                            STATUS_STYLES[commande.statut] ??
+                            "bg-gray-100 text-gray-700"
+                          }`}
+                        >
+                          {STATUS_LABELS[commande.statut] ?? commande.statut}
+                        </span>
+                      </td>
+                      <td className="px-5 py-3 text-right whitespace-nowrap">
+                        <Link
+                          href={`/client/commandes/${commande.id}`}
+                          className="text-blue-600 hover:underline font-medium"
+                        >
+                          Voir →
+                        </Link>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </>
         )}
       </div>
     </div>
