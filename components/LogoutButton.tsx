@@ -1,21 +1,23 @@
 'use client'
 
-import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase/client'
 
 export default function LogoutButton() {
-  const router = useRouter()
-
   const handleLogout = async () => {
     try {
-      // Déconnexion de l'utilisateur via Supabase
+      // 1. Déconnexion stricte de la session Supabase
       const { error } = await supabase.auth.signOut()
       if (error) throw error
 
-      // Rafraîchit la page actuelle pour mettre à jour l'état de l'interface
-      router.refresh()
-      // Optionnel : rediriger l'utilisateur vers la page de connexion
-      // router.push('/login')
+      // 2. Nettoyage manuel du stockage local (sécurité supplémentaire)
+      if (typeof window !== 'undefined') {
+        window.localStorage.clear()
+        window.sessionStorage.clear()
+        
+        // 3. Forcer un rechargement complet du navigateur vers la page d'accueil ou connexion
+        // Cela détruit instantanément le cache Next.js (RSC) qui bloquait l'affichage
+        window.location.href = '/'
+      }
     } catch (error) {
       console.error('Erreur lors de la déconnexion :', error)
     }
