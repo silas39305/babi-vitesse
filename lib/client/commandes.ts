@@ -45,14 +45,42 @@ const SELECT_FIELDS = `
 
 // Le client Supabase renvoie la relation imbriquée sous forme d'objet
 // (parfois de tableau selon la version du typing) : on normalise ici.
-function flattenLivreur(row: any) {
-  const livreur = Array.isArray(row.livreur) ? row.livreur[0] : row.livreur;
-  const { livreur: _omit, ...rest } = row;
+type LivreurRaw = {
+  nom: string;
+  prenom: string;
+  telephone: string;
+};
+
+type CommandeRow = Omit<
+  CommandeDetail,
+  "livreur_nom" | "livreur_prenom" | "livreur_telephone"
+> & {
+  livreur: LivreurRaw | LivreurRaw[] | null;
+};
+
+function flattenLivreur(row: CommandeRow): CommandeDetail {
+  const livreurRaw = Array.isArray(row.livreur) ? row.livreur[0] : row.livreur;
   return {
-    ...rest,
-    livreur_nom: livreur?.nom ?? null,
-    livreur_prenom: livreur?.prenom ?? null,
-    livreur_telephone: livreur?.telephone ?? null,
+    id: row.id,
+    adresse_recuperation: row.adresse_recuperation,
+    commune: row.commune,
+    adresse_livraison: row.adresse_livraison,
+    destinataire_nom: row.destinataire_nom,
+    destinataire_telephone: row.destinataire_telephone,
+    client_numero: row.client_numero,
+    client_whatsapp: row.client_whatsapp,
+    urgent: row.urgent,
+    zone_prix: row.zone_prix,
+    prix_livraison: row.prix_livraison,
+    description_colis: row.description_colis,
+    notes: row.notes,
+    statut: row.statut,
+    motif_annulation: row.motif_annulation,
+    created_at: row.created_at,
+    updated_at: row.updated_at,
+    livreur_nom: livreurRaw?.nom ?? null,
+    livreur_prenom: livreurRaw?.prenom ?? null,
+    livreur_telephone: livreurRaw?.telephone ?? null,
   };
 }
 
