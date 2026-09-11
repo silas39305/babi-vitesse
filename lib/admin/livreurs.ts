@@ -1,7 +1,7 @@
 import "server-only";
 import { createAdminClient } from "@/lib/supabase/admin";
 
-export type LivreurStatus = "approved" | "pending" | "rejected";
+export type LivreurStatus = "approved" | "pending" | "rejected" | "suspended";
 
 export type LivreurListItem = {
   id: string;
@@ -26,6 +26,7 @@ export type LivreurDetail = {
   vehicule_type: string;
   vehicule_plaque: string;
   created_at: string;
+  rejection_reason: string | null;
   documents: {
     label: string;
     url: string | null;
@@ -72,7 +73,7 @@ export async function getLivreurDetail(
     .select(
       `id, nom, prenom, telephone, adresse, status, date_naissance,
        contact_urgence_nom, contact_urgence_telephone,
-       vehicule_type, vehicule_plaque, created_at,
+       vehicule_type, vehicule_plaque, created_at, rejection_reason,
        piece_identite_recto_url, piece_identite_verso_url,
        selfie_url, vehicule_photo_url, permis_url, carte_grise_url`
     )
@@ -124,6 +125,10 @@ export async function getLivreurDetail(
     vehicule_type: data.vehicule_type,
     vehicule_plaque: data.vehicule_plaque,
     created_at: data.created_at,
+    rejection_reason: data.rejection_reason ?? null,
     documents,
   };
 }
+
+export const VEHICULE_TYPES = ["moto", "velo", "voiture"] as const;
+export type VehiculeType = (typeof VEHICULE_TYPES)[number];

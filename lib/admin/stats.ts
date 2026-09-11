@@ -7,6 +7,7 @@ export type AdminStats = {
   livreursApprouves: number;
   livreursEnAttente: number;
   livreursRejetes: number;
+  livreursSuspendus: number;
   inscriptionsRecentes: {
     id: string;
     nom: string;
@@ -26,6 +27,7 @@ export async function getAdminStats(): Promise<AdminStats> {
     { count: livreursApprouves },
     { count: livreursEnAttente },
     { count: livreursRejetes },
+    { count: livreursSuspendus },
     { data: recents },
   ] = await Promise.all([
     supabase
@@ -53,6 +55,11 @@ export async function getAdminStats(): Promise<AdminStats> {
       .eq("status", "rejected"),
     supabase
       .from("profiles")
+      .select("id", { count: "exact", head: true })
+      .eq("role", "livreur")
+      .eq("status", "suspended"),
+    supabase
+      .from("profiles")
       .select("id, nom, prenom, role, status, created_at")
       .order("created_at", { ascending: false })
       .limit(5),
@@ -64,6 +71,7 @@ export async function getAdminStats(): Promise<AdminStats> {
     livreursApprouves: livreursApprouves ?? 0,
     livreursEnAttente: livreursEnAttente ?? 0,
     livreursRejetes: livreursRejetes ?? 0,
+    livreursSuspendus: livreursSuspendus ?? 0,
     inscriptionsRecentes: recents ?? [],
   };
 }

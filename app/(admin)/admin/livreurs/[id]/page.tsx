@@ -2,17 +2,20 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getLivreurDetail } from "@/lib/admin/livreurs";
 import LivreurActions from "../LivreurActions";
+import LivreurEditForm from "../LivreurEditForm";
 
 const STATUS_LABELS: Record<string, string> = {
   approved: "Approuvé",
   pending: "En attente",
   rejected: "Rejeté",
+  suspended: "Suspendu",
 };
 
 const STATUS_STYLES: Record<string, string> = {
   approved: "bg-green-100 text-green-800",
   pending: "bg-yellow-100 text-yellow-800",
   rejected: "bg-red-100 text-red-800",
+  suspended: "bg-orange-100 text-orange-800",
 };
 
 function formatDate(iso: string) {
@@ -164,9 +167,29 @@ export default async function LivreurDetailPage({
         </p>
       </div>
 
+      <div className="rounded-xl border border-gray-200 bg-white shadow-sm p-5 mb-6">
+        <h2 className="font-semibold text-gray-900">
+          Modifier téléphone &amp; véhicule
+        </h2>
+        <p className="text-xs text-gray-400 mt-0.5 mb-3">
+          Corrige une erreur de saisie — n&apos;affecte pas le statut du
+          dossier.
+        </p>
+        <LivreurEditForm
+          livreurId={livreur.id}
+          telephone={livreur.telephone}
+          vehiculeType={livreur.vehicule_type}
+          vehiculePlaque={livreur.vehicule_plaque}
+        />
+      </div>
+
       <div className="rounded-xl border border-gray-200 bg-white shadow-sm p-5">
         <h2 className="font-semibold text-gray-900 mb-4">Décision</h2>
-        <LivreurActions livreurId={livreur.id} status={livreur.status} />
+        <LivreurActions
+          livreurId={livreur.id}
+          status={livreur.status}
+          rejectionReason={livreur.rejection_reason}
+        />
       </div>
     </div>
   );

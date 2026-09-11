@@ -2,14 +2,23 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { approveLivreur, rejectLivreur } from "./actions";
+import {
+  approveLivreur,
+  rejectLivreur,
+  suspendLivreur,
+  reactivateLivreur,
+  reopenLivreur,
+} from "./actions";
+import type { LivreurStatus } from "@/lib/admin/livreurs";
 
 export default function LivreurActions({
   livreurId,
   status,
+  rejectionReason,
 }: {
   livreurId: string;
-  status: "approved" | "pending" | "rejected";
+  status: LivreurStatus;
+  rejectionReason?: string | null;
 }) {
   const [isPending, startTransition] = useTransition();
   const [showRejectForm, setShowRejectForm] = useState(false);
@@ -17,22 +26,10 @@ export default function LivreurActions({
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
 
-  function handleApprove() {
+  function run(action: () => Promise<{ error: string } | { success: true }>) {
     setError(null);
     startTransition(async () => {
-      const result = await approveLivreur(livreurId);
-      if ("error" in result) {
-        setError(result.error);
-      } else {
-        router.refresh();
-      }
-    });
-  }
-
-  function handleReject() {
-    setError(null);
-    startTransition(async () => {
-      const result = await rejectLivreur(livreurId, motif);
+      const result = await action();
       if ("error" in result) {
         setError(result.error);
       } else {
@@ -42,16 +39,30 @@ export default function LivreurActions({
     });
   }
 
-  if (status !== "pending") {
-    return (
-      <p className="text-sm text-gray-500">
-        Ce dossier a déjà été traité — statut actuel :{" "}
-        <span className="font-medium">
-          {status === "approved" ? "Approuvé" : "Rejeté"}
-        </span>
-        .
-      </p>
-    );
+  function handleApprove() {
+    run(() => approveLivreur(livreurId));
+  }
+
+  function handleReject() {
+    run(() => rejectLivreur(livreurId, motif));
+  }
+
+  function handleSuspend() {
+    if (!confirm("Suspendre ce livreur ? Il ne pourra plus se connecter tant qu'il n'est pas réactivé.")) {
+      return;
+    }
+    run(() => suspendLivreur(livreurId));
+  }
+
+  function handleReactivate() {
+    run(() => reactivateLivreur(livreurId));
+  }
+
+  function handleReopen() {
+    if (!confirm("Repasser ce dossier en attente pour réexamen ? Le motif de rejet actuel sera effacé.")) {
+      return;
+    }
+    run(() => reopenLivreur(livreurId));
   }
 
   return (
@@ -62,7 +73,7 @@ export default function LivreurActions({
         </p>
       )}
 
-      {!showRejectForm ? (
+      {status === "pending" && !showRejectForm && (
         <div className="flex gap-3">
           <button
             onClick={handleApprove}
@@ -79,7 +90,9 @@ export default function LivreurActions({
             Rejeter
           </button>
         </div>
-      ) : (
+      )}
+
+      {status === "pending" && showRejectForm && (
         <div className="space-y-3">
           <textarea
             value={motif}
@@ -104,6 +117,62 @@ export default function LivreurActions({
               Annuler
             </button>
           </div>
+        </div>
+      )}
+
+      {status === "approved" && (
+        <div className="flex items-center gap-3">
+          <p className="text-sm text-gray-500">
+            Ce livreur est actif et peut se connecter.
+          </p>
+          <button
+            onClick={handleSuspend}
+            disabled={isPending}
+            className="px-4 py-2 bg-white text-orange-600 border border-orange-300 text-sm font-medium rounded-md hover:bg-orange-50 disabled:opacity-50 transition-colors"
+          >
+            {isPending ? "Traitement..." : "Suspendre"}
+          </button>
+        </div>
+      )}
+
+      {status === "suspended" && (
+        <div className="flex items-center gap-3">
+          <p className="text-sm text-gray-500">
+            Ce compte est suspendu — le livreur ne peut plus se connecter.
+          </p>
+          <button
+            onClick={handleReactivate}
+            disabled={isPending}
+            className="px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-md hover:bg-green-700 disabled:opacity-50 transition-colors"
+          >
+            {isPending ? "Traitement..." : "Réactiver"}
+          </button>
+        </div>
+      )}
+
+      {status === "rejected" && (
+        <div className="space-y-3">
+          <p className="text-sm text-gray-500">
+            Ce dossier a été rejeté
+            {rejectionReason ? (
+              <>
+                {" "}
+                — motif :{" "}
+                <span className="text-gray-700 font-medium">
+                  {rejectionReason}
+                </span>
+              </>
+            ) : (
+              "."
+            )}
+          </p>
+          <button
+            onClick={handleReopen}
+            disabled={isPending}
+            className="px-4 py-2 bg-white text-blue-600 border border-blue-300 text-sm font-medium rounded-md hover:bg-blue-50 disabled:opacity-50 transition-colors"
+          >
+            {isPending ? "Traitement..." : "Repasser en attente pour réexamen"}
+          </button>
         </div>
       )}
     </div>

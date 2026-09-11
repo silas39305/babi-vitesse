@@ -5,12 +5,14 @@ const STATUS_LABELS: Record<string, string> = {
   approved: "Approuvé",
   pending: "En attente",
   rejected: "Rejeté",
+  suspended: "Suspendu",
 };
 
 const STATUS_STYLES: Record<string, string> = {
   approved: "bg-green-100 text-green-800",
   pending: "bg-yellow-100 text-yellow-800",
   rejected: "bg-red-100 text-red-800",
+  suspended: "bg-orange-100 text-orange-800",
 };
 
 const ROLE_LABELS: Record<string, string> = {
@@ -176,6 +178,12 @@ export default async function AdminDashboard() {
               <span className="text-gray-600">Rejetés</span>
               <span className="font-semibold text-red-600">
                 {stats.livreursRejetes}
+              </span>
+            </div>
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-gray-600">Suspendus</span>
+              <span className="font-semibold text-orange-600">
+                {stats.livreursSuspendus}
               </span>
             </div>
           </div>
