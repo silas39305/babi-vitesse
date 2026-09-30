@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getSession } from "@/lib/auth/session";
 import {
@@ -36,9 +37,12 @@ function CommandeCard({ commande }: { commande: CommandeLivreurItem }) {
   return (
     <li className="px-4 py-3">
       <div className="flex items-start justify-between gap-3 mb-1">
-        <p className="text-sm font-medium text-gray-900 min-w-0 truncate">
+        <Link
+          href={`/livreur/commandes/${commande.id}`}
+          className="text-sm font-medium text-gray-900 hover:text-blue-600 min-w-0 truncate"
+        >
           {commande.adresse_recuperation} → {commande.adresse_livraison}
-        </p>
+        </Link>
         <span
           className={`shrink-0 text-xs font-medium px-2 py-1 rounded-full ${
             STATUS_STYLES[commande.statut] ?? "bg-gray-100 text-gray-700"
